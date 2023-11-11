@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.3" client="site" method="upgrade">
+	<name>RNS Upload module</name>
+	<author>Giannis Brailas (RNS-SYSTEMS)</author>
+	<creationDate>Jan 2022</creationDate>
+	<copyright>Copyright (C) 2022 Giannis Brailas. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
+	<authorEmail>jbrailas@rns-systems.eu</authorEmail>
+	<authorUrl>https://www.rns-systems.eu</authorUrl>
+	<version>1.1.0</version>
+	<description>RNS Upload Module by Giannis Brailas</description>
+	<files>
+		<filename module="mod_rnsupload">mod_rnsupload.php</filename>
+		<filename>index.html</filename>
+		<filename>helper.php</filename>
+		<filename>fileupload.helper.php</filename>
+		<folder>tmpl</folder>
+		<folder>assets</folder>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="moduleclass_sfx" 
+					type="text" 
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" 
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" 
+				/>
+				<field name="selected_upload_folder" type="text" default="" label="Φάκελος αρχείων"  description = "Επιλέξτε τον φάκελο κάτω από το Images που θα αποθηκεύονται τα αρχεία"/>
+				<field name="selected_image" type="media" default="" preview="true" preview_width="500" label="Εικόνα"  description = "Επιλέξτε την εικόνα που θέλετε να εμφανίζεται πάνω πάνω"/>
+				<field name="autoReloadPage" type="radio" default="0" label="Αυτόματη επαναφόρτωση σελίδας"  description = "Επιλέξτε για αυτόματη επαναφόρτωση κάθε 15 δευτερόλεπτα">
+					<option value="0">JNo</option>
+					<option value="1">JYes</option>			
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>
