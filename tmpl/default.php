@@ -1,12 +1,12 @@
 <?php
 /**
-* @version		1.1
+* @version		1.1.1
 * @author		Giannis Brailas (jbrailas@rns-systems.eu)
 * @copyright	Giannis Brailas
 * @license		GNU/GPLv3
 
 RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2022  Giannis Brailas
+Copyright (C) 2024  Giannis Brailas
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
-
-//JHtml::_('bootstrap.popover');
 ?>
 
 <script>
@@ -769,10 +767,6 @@ jQuery(document).ready(function($){
 				}
 			}
 			
-			//error_log("date_diff: " . date_diff($current_date,$modtime_d)->format('%R%a days') . "\n"); 
-			//επιστρέφει αρνητικές τιμές
-			
-			//if (($filelink != "") && (date_diff($reallyLastModified_d,$modtime_d)->format('%R%a days') > $days) && ($files_counter < $numfilestodisplay)) { // σύγκριση με πιο πρόσφατη ημερομηνία και μετρητή
 			if (($filelink != "") && (date_diff($current_date,$modtime_d)->format('%R%a days') < $days) && ($files_counter < $numfilestodisplay)) { // σύγκριση με πιο πρόσφατη ημερομηνία και μετρητή
 			?>
 				<tr id="<?php echo "arxeio_" . $files_counter; ?>" class="cool">
@@ -802,7 +796,7 @@ jQuery(document).ready(function($){
 		</table>
 		<br>
 	</div>
-	<?php else : //δεν βρέθηκαν αρχεία ?>
+	<?php else : //didn't find any files ?>
 	<script>
 		function sortInteger(element, n, type) {
 			//don't do anything

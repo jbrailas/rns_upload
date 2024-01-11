@@ -2,12 +2,12 @@
 <extension type="module" version="3.3" client="site" method="upgrade">
 	<name>RNS Upload module</name>
 	<author>Giannis Brailas (RNS-SYSTEMS)</author>
-	<creationDate>Jan 2022</creationDate>
-	<copyright>Copyright (C) 2022 Giannis Brailas. All rights reserved.</copyright>
+	<creationDate>Jan 2024</creationDate>
+	<copyright>Copyright (C) 2024 Giannis Brailas. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
 	<authorEmail>jbrailas@rns-systems.eu</authorEmail>
 	<authorUrl>https://www.rns-systems.eu</authorUrl>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<description>RNS Upload Module by Giannis Brailas</description>
 	<files>
 		<filename module="mod_rnsupload">mod_rnsupload.php</filename>

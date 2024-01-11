@@ -6,7 +6,7 @@
 * @license		GNU/GPLv3
 
 RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2022  Giannis Brailas (RNS-SYSTEMS)
+Copyright (C) 2024  Giannis Brailas (RNS-SYSTEMS)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Response\JsonResponse;
+use Joomla\CMS\Filesystem\File;
 	
 class modRnsUploadHelper {
 
@@ -73,10 +76,10 @@ class modRnsUploadHelper {
 				$new_file->filename = $entryName;
 				$new_file->filepath = $dest_path . $entryName;
 				$new_file->created = date('Y-m-d H:i:s');
-				//$new_file->created_by =  JFactory::getUser()->id; //δεν ξέρουμε ποιος
+				//$new_file->created_by =  Factory::getUser()->id; //δεν ξέρουμε ποιος
 				$new_file->published = 1;
 				try {
-					JFactory::getDbo()->insertObject('#__rns_upload_files', $new_file);
+					Factory::getDbo()->insertObject('#__rns_upload_files', $new_file);
 					}	
 				catch(Exception $e) {
 					$errors .= $e->getMessage() . "\n";
@@ -94,8 +97,8 @@ class modRnsUploadHelper {
 	public static function getUploadPermission() { 
 
 		$user_grant_upload = false;
-		$cur_user_id = JFactory::getUser()->id;
-		$db = JFactory::getDbo();
+		$cur_user_id = Factory::getUser()->id;
+		$db = Factory::getDbo();
 		$group_access = '11';  //Access μόνο στα groups IT Department ID 11 και στην Βίκη ID 105
 		$distinct_user_access = '105'; //Access και σε συγκεκριμένους χρήστες
         $query = $db->getQuery(true);
@@ -240,10 +243,10 @@ class modRnsUploadHelper {
 					$new_file->filename = $filename;
 					$new_file->filepath = $efu_parent . DIRECTORY_SEPARATOR . $project_folder . DIRECTORY_SEPARATOR . $filename;
 					$new_file->created = date('Y-m-d H:i:s');
-					$new_file->created_by =  JFactory::getUser()->id;
+					$new_file->created_by =  Factory::getUser()->id;
 					$new_file->published = 1;
 					try {
-						JFactory::getDbo()->insertObject('#__rns_upload_files', $new_file);
+						Factory::getDbo()->insertObject('#__rns_upload_files', $new_file);
 						}	
 					catch(Exception $e) {
 						$errors .= $e->getMessage() . "\n";
@@ -257,12 +260,12 @@ class modRnsUploadHelper {
 			$result = array('error' => "ERROR uploading file! Cannot parse form data."); 
 			error_log('RNS_upload: ERROR uploading file! Cannot parse form data.');
 		}
-		echo new JResponseJson($result);
+		echo new JsonResponse($result);
 	}
 	
 	public static function getMenuCatID() {
 		//επιστρέφει το id από το url: com_content&view=article&id=XX
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$menu = $app->getMenu();
 		$current_item = $menu->getActive()->query['id'];
 		return $current_item;
@@ -281,13 +284,13 @@ class modRnsUploadHelper {
 			//attempt to delete the file if it exists
 			if (file_exists($eggrafo_to_del)) {
 				try {
-					JFile::delete($eggrafo_to_del);
+					File::delete($eggrafo_to_del);
 					$result = array('error' => '', 'message' => 'ok');
 					error_log("Deleted file: " . $eggrafo_to_del );
 					
 					
 					//βρες το αρχείο στη βάση ώστε να ενημέρωσεις
-					$db = JFactory::getDbo();
+					$db = Factory::getDbo();
 					$query = $db->getQuery(true);
 					$query->select('id')
 							->from('#__rns_upload_files')
@@ -302,10 +305,10 @@ class modRnsUploadHelper {
 						$file_to_unpublish = new stdClass();
 						$file_to_unpublish->id = $filename_id;
 						$file_to_unpublish->modified = date('Y-m-d H:i:s');
-						$file_to_unpublish->modified_by =  JFactory::getUser()->id;
+						$file_to_unpublish->modified_by =  Factory::getUser()->id;
 						$file_to_unpublish->published = 0;
 						try {
-							JFactory::getDbo()->updateObject('#__rns_upload_files', $file_to_unpublish, 'id');
+							Factory::getDbo()->updateObject('#__rns_upload_files', $file_to_unpublish, 'id');
 							}	
 						catch(Exception $e) {
 							$errors .= $e->getMessage() . "\n";
@@ -325,7 +328,7 @@ class modRnsUploadHelper {
 			error_log( print_r( $result , TRUE) );
 		}
 					
-		echo new  JResponseJson($result);
+		echo new  JsonResponse($result);
 	}
 	
 	//Rename file
@@ -339,7 +342,7 @@ class modRnsUploadHelper {
 			//attempt to rename the file if it exists
 			if (file_exists($old_eggrafo_name)) {
 				try {
-					JFile::move($old_eggrafo_name, $new_eggrafo_name);
+					File::move($old_eggrafo_name, $new_eggrafo_name);
 					$result = array('error' => '', 'message' => 'ok');
 					//error_log("Renamed file: " . $old_eggrafo_name );
 				}
@@ -355,7 +358,7 @@ class modRnsUploadHelper {
 			error_log( print_r( $result , TRUE) );
 		}
 					
-		echo new  JResponseJson($result);
+		echo new  JsonResponse($result);
 	}	
 }
 ?>

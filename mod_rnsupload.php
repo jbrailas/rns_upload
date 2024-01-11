@@ -1,6 +1,6 @@
 <?php
 /**
-* @version		1.0
+* @version		1.1.1
 * @author		Giannis Brailas (jbrailas@rns-systems.eu)
 * @copyright	Giannis Brailas
 * @license		GNU/GPLv3
@@ -8,7 +8,7 @@
 
 /*
 RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2022  Giannis Brailas
+Copyright (C) 2024  Giannis Brailas
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,9 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
-
-// Include the syndicate functions only once
-//require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'helper.php');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 
 JLoader::register('modRnsUploadHelper', __DIR__ . '/helper.php');
 
@@ -41,30 +40,32 @@ setlocale(LC_CTYPE, 'en_GB.utf8');
 //get upload special permissions
 $user_grant_upload = modRnsUploadHelper::getUploadPermission();
 
-//$app = JFactory::getApplication();
-//$menu = $app->getMenu();
-//$current_item = $menu->getActive()->query['id'];
-//error_log("c: " . $current_item); //επιστρέφει το id από το url: com_content&view=article&id=XX
-
+//get the id of the menu
 $menu_catid = modRnsUploadHelper::getMenuCatID();
 
 $fpath = $_SERVER['HTTP_HOST'];
-if (strpos($fpath,'http://') === false)
-	$fpath = 'http://'.$fpath;
+if (isset($_SERVER['HTTPS'])) {
+	if (strpos($fpath,'https://') === false)
+		$fpath = 'https://'.$fpath;
+}
+else {
+	if (strpos($fpath,'http://') === false)
+		$fpath = 'http://'.$fpath;
+}
 $jpath = JPATH_SITE;
 
-$doc = JFactory::getDocument();
+$doc = Factory::getDocument();
 
 $headData = $doc->getHeadData();
 $scripts = $headData['scripts'];
 
 //remove your script, i.e. mootools
-unset($scripts[JURI::root(true) . '/modules/mod_rnsupload/assets/js/jquery.mobile-1.4.5.min.js']);
+unset($scripts[Uri::root(true) . '/modules/mod_rnsupload/assets/js/jquery.mobile-1.4.5.min.js']);
 $headData['scripts'] = $scripts;
 $doc->setHeadData($headData);
 	
 //load the CSS and Javascript files
-$doc->addStyleSheet(JURI::root(true) . '/modules/mod_rnsupload/assets/css/rnsupload.css');
+$doc->addStyleSheet(Uri::root(true) . '/modules/mod_rnsupload/assets/css/rnsupload.css');
 
 //Load Module Upload Folder
 $SelectedUploadFolder = trim($params->get( 'selected_upload_folder', ''));
