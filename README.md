@@ -7,7 +7,7 @@ If you already know how to use RNS_Upload and you need it for a Joomla! project,
 Download
 --------
 
-You can download the current version / older version of RNS_Upload-Joomla-Library using the [RNS_Upload-Joomla-Library download page](https://github.com/ivanramosnet/RNS_Upload-Joomla-Library/releases).
+You can download the current version / older version of RNS_Upload-Joomla-Library using the [RNS_Upload-Joomla-Library download page](https://github.com/jbrailas/rns_upload/releases).
 
 Version
 -------
