@@ -1,0 +1,269 @@
+/**
+ * @package     RnsUpload
+ * @copyright   Copyright (C) 2024 RNS-SYSTEMS All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ */
+
+.rTable {
+  	display: table;
+  	width: 100%;
+	background-color: #f5f5f5;
+	border-top: 3px dashed #cdcdcd;
+	border-left: 3px dashed #cdcdcd;
+}
+.rTableRow {
+  	display: table-row;
+}
+.rTableHeading {
+  	display: table-header-group;
+  	background-color: #ddd;
+}
+
+.rTableHead {
+	font-weight: bold;
+}
+
+.rTableCell, .rTableHead {
+  	display: table-cell;
+  	padding: 10px;
+	border-bottom: 3px dashed #cdcdcd;
+    border-right: 3px dashed #cdcdcd;
+}
+
+.rTableHeading {
+  	display: table-header-group;
+  	background-color: #ddd;
+  	font-weight: bold;
+}
+.rTableFoot {
+  	display: table-footer-group;
+  	font-weight: bold;
+  	background-color: #ddd;
+}
+.rTableBody {
+  	display: table-row-group;
+}
+
+.table thead th {
+    cursor: pointer;
+    color: #5aa847;
+}
+
+.rnsuploadpage .icons {
+	display: none;
+}
+.rnsuploadpage .body-wrapper:before {
+	content: "";
+	background-image: url("../images/rnspdf_bg.jpg");
+	background-position: center;
+    background-size: 60%;
+	opacity: 0.1;
+	position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: -1;
+}
+
+.ui-panel {
+    bottom: 0 !important;
+}
+.ui-panel-inner{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 4px !important;    
+    padding-right: 26px !important;
+    height: 98% !important;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.ui-panel-inner .ui-btn {
+    white-space: normal;
+}
+
+.ui-btn.ui-btn-b {
+	background: #333;
+    border-color: #1f1f1f;
+    color: #fff;
+    text-shadow: 0 1px 0 #111;
+}
+
+.ui-btn {
+    font-size: 16px;
+    margin: 0.5em 0;
+    padding: 0.7em 1em;
+    display: block;
+    position: relative;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.ui-corner-all {
+    -webkit-border-radius: 0.3125em;
+    border-radius: 0.3125em;
+}
+
+.ui-btn-corner-all, .ui-corner-all {
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
+}
+
+.ui-btn, label.ui-btn {
+    font-weight: 700;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.ui-shadow {
+    -webkit-box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+}
+ 
+#loading,
+.loading {
+   width: 100%;
+   height: 100%;
+   top: 0;
+   left: 0;
+   position: fixed;
+   opacity: 0.7;
+   background-color: #fff;
+   z-index: 99;
+   text-align: center;
+   padding-top:350px;
+}
+
+#loading-image {
+  margin: auto;
+  z-index: 100;
+}
+
+#rns_pdf_files_wrapper {
+	text-align:center;
+	margin:0 auto;
+	padding-bottom:15px;
+	max-width: 50em;
+	overflow: hidden;
+}
+
+.rns_pdf_files_drop_inner_area {
+	border: 2px dashed grey;
+	height: 100%;
+}
+
+#rns_pdf_files_drop_area {
+	height: 300px;
+	background-color: #C8DADF;
+	padding: 0.5em;
+	cursor: pointer;
+}
+
+.rns_pdf_files_drop_text {
+	margin-top:80px;
+	color: #3d5265;
+    opacity: 0.5;
+	font-size:25px;
+	font-weight:bold;
+}
+
+#rns_pdf_files_drop_area img {
+ max-width:200px;
+}
+
+/* The Modal (background) */
+.modal_window {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    /* z-index: 1;  Sit on top */
+    padding-top: 80px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	z-index: 1000;
+}
+.modal_content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 15px;
+    border: 1px solid #888;
+    width: 80%;
+	border-radius: 4px;
+}
+
+#helpModal .modal_content {
+	height: 85%;
+	overflow: hidden;
+}
+
+#helpModal .modal_window {
+	overflow: hidden !important;
+}
+
+#helpModal .modal_content article {
+	overflow: auto;
+	height: 100%;
+	margin-top: 25px;
+}
+
+.modal_width_50 {
+	width: 50% !important;
+}
+
+.edit_button {
+	color: #ffc991;
+}
+
+.edit_button:hover, .edit_button:focus {
+	color: #eda050;
+	text-decoration: none;
+    cursor: pointer;
+}
+
+.close_button {
+	color: #aaaaaa;
+}
+
+.modal_close_btn {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.modal_close_btn:hover, .modal_close_btn:focus,
+.close_button:hover, .close_button:focus {
+    color: #ff0000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 414px) {
+	.rTableCell, .rTableHead {
+		font-size: 10px;
+	}	
+}
+
+@media screen and (min-width: 415px) and (max-width: 768px) {
+	.rTableCell, .rTableHead {
+		font-size:9px;
+	}
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+	.rTableCell, .rTableHead {
+		font-size: 12px;
+	}
+}
