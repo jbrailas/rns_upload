@@ -75,7 +75,7 @@
 	
 	<updateservers>
 		<server type="extension" priority="1" name="RNS Upload Updates">
-			https://github.com/jbrailas/rns_upload/blob/main/update/rns_upload_updates.xml
+			https://raw.githubusercontent.com/jbrailas/rns_upload/main/update/rns_upload_updates.xml
 		</server>
 	</updateservers>
 	
