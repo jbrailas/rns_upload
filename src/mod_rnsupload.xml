@@ -7,7 +7,7 @@
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
 	<authorEmail>jbrailas@rns-systems.eu</authorEmail>
 	<authorUrl>https://www.rns-systems.eu</authorUrl>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<description>RNS Upload and Files Display Module for Joomla 5 by Giannis Brailas</description>
 	<files>
 		<filename module="mod_rnsupload">mod_rnsupload.php</filename>
@@ -72,6 +72,13 @@
 			</fieldset>
 		</fields>
 	</config>
+	
+	<updateservers>
+		<server type="extension" priority="1" name="RNS Upload Updates">
+			https://github.com/jbrailas/rns_upload/blob/main/update/rns_upload_updates.xml
+		</server>
+	</updateservers>
+	
 	<!-- Automatically runs SQL during installation -->
     <install>
         <sql>
@@ -87,4 +94,5 @@
             <file driver="postgresql" charset="utf8">sql/postgresql/uninstall.postgresql.utf8.sql</file>
         </sql>
     </uninstall>
+	
 </extension>
