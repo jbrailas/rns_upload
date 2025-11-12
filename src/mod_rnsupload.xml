@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="3.3" client="site" method="upgrade">
-	<name>RNS Upload module</name>
-	<author>Giannis Brailas (RNS-SYSTEMS)</author>
-	<creationDate>Jan 2024</creationDate>
-	<copyright>Copyright (C) 2024 Giannis Brailas. All rights reserved.</copyright>
+<extension type="module" version="4.0" client="site" method="upgrade">
+	<name>RNS Upload and Files Display Module for Joomla 5</name>
+	<author>Giannis Brailas</author>
+	<creationDate>Nov 2025</creationDate>
+	<copyright>Copyright (C) 2025 Giannis Brailas. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
 	<authorEmail>jbrailas@rns-systems.eu</authorEmail>
 	<authorUrl>https://www.rns-systems.eu</authorUrl>
-	<version>1.1.2</version>
-	<description>RNS Upload Module by Giannis Brailas</description>
+	<version>1.2.0</version>
+	<description>RNS Upload and Files Display Module for Joomla 5 by Giannis Brailas</description>
 	<files>
 		<filename module="mod_rnsupload">mod_rnsupload.php</filename>
 		<filename>index.html</filename>
@@ -25,13 +25,66 @@
 					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" 
 					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" 
 				/>
-				<field name="selected_upload_folder" type="text" default="" label="Φάκελος αρχείων"  description = "Επιλέξτε τον φάκελο κάτω από το Images που θα αποθηκεύονται τα αρχεία"/>
-				<field name="selected_image" type="media" default="" preview="true" preview_width="500" label="Εικόνα"  description = "Επιλέξτε την εικόνα που θέλετε να εμφανίζεται πάνω πάνω"/>
-				<field name="autoReloadPage" type="radio" default="0" label="Αυτόματη επαναφόρτωση σελίδας"  description = "Επιλέξτε για αυτόματη επαναφόρτωση κάθε 15 δευτερόλεπτα">
+				<field 
+					name="selected_upload_folder" 
+					type="text" 
+					default="" 
+					label="Φάκελος αρχείων"  
+					description = "Επιλέξτε τον φάκελο κάτω από το Images που θα αποθηκεύονται τα αρχεία"
+				/>
+				<field
+					name="can_write"
+					multiple="multiple"
+					type="sql"
+					sql_select="userid, name"
+					sql_from="#__ppcr_user_info"
+					sql_where="visible = 1 and disabled = 0"
+					sql_order="name ASC"
+					value_field="name"
+					key_field="userid"
+					class="w_280 chosen-select"
+					label="Δικαιώματα write"
+					description="Προσοχή, όσους επιλέξετε θα έχουν δικαιώματα new/edit/delete"
+					size="10"
+					default="0"
+					>
+					<option value="0">Παρακαλώ κάντε μια επιλογή</option>
+				</field>
+				<field 
+					name="selected_image" 
+					type="media" 
+					default="" 
+					preview="true" 
+					preview_width="500" label="Εικόνα"  
+					description = "Επιλέξτε την εικόνα που θέλετε να εμφανίζεται πάνω πάνω"
+				/>
+				<field 
+					name="autoReloadPage" 
+					type="radio" 
+					default="0" 
+					label="Αυτόματη επαναφόρτωση σελίδας"  
+					description = "Επιλέξτε για αυτόματη επαναφόρτωση κάθε 15 δευτερόλεπτα"
+					>
 					<option value="0">JNo</option>
 					<option value="1">JYes</option>			
 				</field>
+
 			</fieldset>
 		</fields>
 	</config>
+	<!-- Automatically runs SQL during installation -->
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/install.mysql.utf8.sql</file>
+            <file driver="postgresql" charset="utf8">sql/postgresql/install.postgresql.utf8.sql</file>
+        </sql>
+    </install>
+
+    <!-- handle uninstall -->
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/uninstall.mysql.utf8.sql</file>
+            <file driver="postgresql" charset="utf8">sql/postgresql/uninstall.postgresql.utf8.sql</file>
+        </sql>
+    </uninstall>
 </extension>

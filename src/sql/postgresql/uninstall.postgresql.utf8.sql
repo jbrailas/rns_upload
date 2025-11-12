@@ -1,0 +1,1 @@
+DROP TABLE ihs14_rns_upload_files;

@@ -6,9 +6,6 @@
 * @license		GNU/GPLv2
 * @modified		Jan 2024
 * @modified_by	Giannis Brailas
-*/
-
-/*
 
 Easy File Uploader Module for Joomla!
 Copyright (C) 2010-2016  Michael Albert Gilkes
@@ -36,8 +33,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Filesystem\File;
 
 //import joomla file helper class
-jimport('joomla.filesystem.file');
-
+//jimport('joomla.filesystem.file');
 
 class rnsuploadFileupload 
 {

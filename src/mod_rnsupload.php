@@ -1,14 +1,10 @@
 <?php
 /**
-* @version		1.1.2
+ * @package		RNS Upload and Files Display Module for Joomla 5
+* @version		1.2.0
 * @author		Giannis Brailas (jbrailas@rns-systems.eu)
-* @copyright	Giannis Brailas
+* @copyright	2025 Giannis Brailas
 * @license		GNU/GPLv3
-*/
-
-/*
-RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2024  Giannis Brailas
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
+
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Helper\ModuleHelper;
@@ -33,13 +30,14 @@ use Joomla\CMS\Helper\ModuleHelper;
 JLoader::register('modRnsUploadHelper', __DIR__ . '/helper.php');
 
 //get the module class designation
-$moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'));
+$moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx', ''));
 
 // Set UTF8 to locale -> read correctly all greek filenames
 setlocale(LC_CTYPE, 'en_GB.utf8');
 
 //get upload special permissions
-$user_grant_upload = modRnsUploadHelper::getUploadPermission();
+$users_can_write_array = $params->get( 'can_write', array()); 
+$user_grant_upload = modRnsUploadHelper::getUploadPermission($users_can_write_array);
 
 //get the id of the menu
 $menu_catid = modRnsUploadHelper::getMenuCatID();
@@ -66,7 +64,7 @@ $headData['scripts'] = $scripts;
 $doc->setHeadData($headData);
 	
 //load the CSS and Javascript files
-$doc->addStyleSheet(Uri::root(true) . '/modules/mod_rnsupload/assets/css/rnsupload_v1a.css');
+$doc->addStyleSheet(Uri::root(true) . '/modules/mod_rnsupload/assets/css/rnsupload_v1b.css');
 
 //Load Module Upload Folder
 $SelectedUploadFolder = trim($params->get( 'selected_upload_folder', ''));

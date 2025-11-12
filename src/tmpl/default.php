@@ -402,6 +402,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 			|| $is_permitted_format == "png" || $is_permitted_format == "PNG"
 			|| $is_permitted_format_v4 == "docx" || $is_permitted_format_v4 == "DOCX"
 			|| $is_permitted_format_v4 == "xlsx" || $is_permitted_format_v4 == "XLSX"
+			|| $is_permitted_format_v4 == "xlsb" || $is_permitted_format_v4 == "XLSB"
 			|| $is_permitted_format_v4 == "pptx" || $is_permitted_format_v4 == "PPTX"
 		)) {
 			$dirArray[]=$entryName;
@@ -671,7 +672,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 		*/ ?>
 		<div id="rns_pdf_files_wrapper" class="edit_elements" style="display:none;">
 			<div style="display:none;">
-				<input id="eggrafo" type="file" accept=".xlsx, .xls, .doc, .docx, .ppt, .pptx, .txt, .pdf, .zip, .png, .jpg, .mp4, .msg" multiple="multiple">
+				<input id="eggrafo" type="file" accept=".xlsx, .xlsb, .xls, .doc, .docx, .ppt, .pptx, .txt, .pdf, .zip, .png, .jpg, .mp4, .msg" multiple="multiple">
 			</div>
 			<div id="rns_pdf_files_drop_area">
 				<div class="rns_pdf_files_drop_inner_area">
@@ -740,8 +741,9 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 			elseif ($file_type == "doc" || $file_type_v4 == "docx" ||
 					$file_type == "DOC" || $file_type_v4 == "DOCX")
 				$file_icon = '<i class="far fa-w-14 fa-file-word" style="color: #2e53d7; font-size:22px;"></i>';
-			elseif ($file_type == "xls" || $file_type_v4 == "xlsx" ||
-					$file_type == "XLS" || $file_type_v4 == "XLSX")
+			elseif ($file_type == "xls" || $file_type == "XLS" ||
+					$file_type_v4 == "xlsx" || $file_type_v4 == "XLSX" ||
+					$file_type_v4 == "xlsb" || $file_type_v4 == "XLSB")
 				$file_icon = '<i class="far fa-w-14 fa-file-excel" style="color: #1b9f43; font-size:22px;"></i>';
 			elseif ($file_type == "zip" || $file_type_v4 == "zipx" ||
 					$file_type == "ZIP" || $file_type_v4 == "ZIPX")

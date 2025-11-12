@@ -1,12 +1,10 @@
 <?php
 /**
-* @version		1.1.2
+ * @package		RNS Upload and Files Display Module for Joomla 5
+* @version		1.2.0
 * @author		Giannis Brailas (jbrailas@rns-systems.eu)
-* @copyright	Giannis Brailas
+* @copyright	2025 Giannis Brailas
 * @license		GNU/GPLv3
-
-RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2024  Giannis Brailas (RNS-SYSTEMS)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
+
 use Joomla\CMS\Factory;
 use Joomla\CMS\Response\JsonResponse;
 use Joomla\CMS\Filesystem\File;
@@ -61,6 +60,7 @@ class modRnsUploadHelper {
 			|| $is_permitted_format == "png" || $is_permitted_format == "PNG"
 			|| $is_permitted_format_v4 == "docx" || $is_permitted_format_v4 == "DOCX"
 			|| $is_permitted_format_v4 == "xlsx" || $is_permitted_format_v4 == "XLSX"
+			|| $is_permitted_format_v4 == "xlsb" || $is_permitted_format_v4 == "XLSB"
 			|| $is_permitted_format_v4 == "pptx" || $is_permitted_format_v4 == "PPTX"
 			)) {
 				//μετακίνησε το αρχείο από τον προσωρινό φάκελο, στον φάκελο που πρέπει.
@@ -94,10 +94,11 @@ class modRnsUploadHelper {
 	
 	//Έλεγχος για επιπλέον δικαιώματα -> 
 	// Όσοι χρήστες είναι στο group access θα έχουν δικαίωμα να ανεβάζουν και να διαγράφουν αρχεία
-	public static function getUploadPermission() { 
+	public static function getUploadPermission($users_can_write_array) { 
 
 		$user_grant_upload = false;
 		$cur_user_id = Factory::getUser()->id;
+		/*
 		$db = Factory::getDbo();
 		$group_access = '11';  //Access μόνο στα groups IT Department ID 11 και στην Βίκη ID 105
 		$distinct_user_access = '105'; //Access και σε συγκεκριμένους χρήστες
@@ -106,11 +107,16 @@ class modRnsUploadHelper {
                 ->from('#__user_usergroup_map')
                 ->where('group_id IN ('.$group_access.') or user_id IN ('.$distinct_user_access.')');
         $db->setQuery($query);
-		foreach($db->loadObjectList() as $granted_ids):		 
+		$users_can_write_array = $db->loadObjectList();
+		foreach($users_can_write_array as $granted_ids):		 
 			if ($cur_user_id == $granted_ids->user_id) {
 				$user_grant_upload = true;
 			}
 		endforeach;
+		*/
+		if (in_array($cur_user_id, $users_can_write_array))
+			$user_grant_upload = true;
+
 		return $user_grant_upload;
 	}
 	
@@ -198,7 +204,7 @@ class modRnsUploadHelper {
 			$project_folder = $_POST['PdfUploadFolder'];
 			$efu_replace = false;
 			$efu_scriptsinarchives = false;
-			$efu_filetypes = "application/msword;application/excel;application/pdf;application/powerpoint;application/x-zip;application/x-zip-compressed;application/zip;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/powerpoint;application/vnd.ms-powerpoint;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/octet-stream;application/CDFV2-unknown;image/png";
+			$efu_filetypes = "application/msword;application/excel;application/pdf;application/powerpoint;application/x-zip;application/x-zip-compressed;application/zip;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.ms-excel.sheet.binary.macroEnabled.12;application/powerpoint;application/vnd.ms-powerpoint;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/octet-stream;application/CDFV2-unknown;image/png";
 			$files = array();
 			foreach ($filesToUpload as $key => $values)	{
 				if (is_array($values)) {
@@ -294,8 +300,8 @@ class modRnsUploadHelper {
 					$query = $db->getQuery(true);
 					$query->select('id')
 							->from('#__rns_upload_files')
-							->where('filename = "' . $_POST['filename'] . '"')
-							->where('filepath = "' . $filepath . '"')
+							->where('filename = ' . $db->query($_POST['filename']))
+							->where('filepath = ' . $db->query($filepath))
 							->where('published = 1');
 					$db->setQuery($query);
 					$filename_id = $db->loadResult();
