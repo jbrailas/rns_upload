@@ -1,11 +1,11 @@
 <?php
 /**
-* @version		2.7.8 mod
+* @version		2.7.9 mod
 * @author		Michael A. Gilkes (jaido7@yahoo.com)
 * @copyright	Michael Albert Gilkes
 * @license		GNU/GPLv2
-* @modified		Jan 2024
-* @modified_by	Giannis Brailas
+* @modified		Jan 2026
+* @modified_by	Giannis Brailas (ioannis@brailas.gr)
 
 Easy File Uploader Module for Joomla!
 Copyright (C) 2010-2016  Michael Albert Gilkes
@@ -30,10 +30,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 defined('_JEXEC') or die('Restricted access');
 
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Filesystem\File;
-
-//import joomla file helper class
-//jimport('joomla.filesystem.file');
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
+use Joomla\Filesystem\Path;
 
 class rnsuploadFileupload 
 {
@@ -42,7 +41,7 @@ class rnsuploadFileupload
 		$result = array();
 		
 		//get the Joomla Path and trim whitespace and slashes from the end
-		$jpath = JPATH_SITE;
+		/*$jpath = JPATH_SITE;
 		$jpath = rtrim($jpath, "/\\ \t\n\r\0\x0B");		
 				
 		//get the parent folder
@@ -59,9 +58,23 @@ class rnsuploadFileupload
 		//create folder if it doesn't exist
 		if (!file_exists($path)) {
 			mkdir($path, 0755, true);
-			//////error_log('rns_upload: Created new folder = '.$path);
+		}*/
+
+		//Sanitize and combine folder segments
+		$subfolder = Path::clean($fparams[0] . '/' . $fparams[1]);
+
+		//Compile the full absolute path using JPATH_SITE
+		$path = Path::clean(JPATH_SITE . '/' . $subfolder);
+
+		// 3. Create the folder if it doesn't exist using the native Joomla API
+		if (!Folder::exists($path)) {
+			// Folder::create automatically sets permissions (0755 by default) and handles recursive creation
+			if (!Folder::create($path)) {
+				// Optional: Handle failure if the directory couldn't be created due to hosting permissions
+				throw new \RuntimeException('Could not create the upload directory.');
+			}
 		}
-		
+
 		//check to see if the upload process has started
 		if (isset($fparams[2]["name"]))
 		{

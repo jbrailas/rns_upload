@@ -1,12 +1,9 @@
 <?php
 /**
-* @version		1.1.2
-* @author		Giannis Brailas (jbrailas@rns-systems.eu)
-* @copyright	Giannis Brailas
+ * @package		RNS Upload and Files Display Module for Joomla 5+
+* @version		1.3.1
+* @author		Giannis Brailas (ioannis@brailas.gr)
 * @license		GNU/GPLv3
-
-RNS Upload and Files Display Module for Joomla!
-Copyright (C) 2024  Giannis Brailas
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 //no direct access
-defined( '_JEXEC' ) or die( 'Restricted access' );
+defined('_JEXEC') or die('Restricted access');
+
+use \Joomla\CMS\Router\Route;
 ?>
 
 <script>
@@ -106,7 +105,9 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 	sortInteger('table_arxeia', 2,'date');
  });
 </script>
+
 <?php if ($user_grant_upload == true && $auto_reload_page) : ?>
+
 <script>
 	var IDLE_TIMEOUT = 14; //seconds
 	var _idleSecondsCounter = 0;
@@ -137,7 +138,101 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 	}
 </script>
 <?php endif; ?>
+
 <?php if ($user_grant_upload == true) : ?>
+
+	<script type="text/javascript">
+		jQuery(document).ready(function($){
+			
+			
+			$("#table_arxeia").on("click",'.edit_button', function(){	 
+
+				//var id_arxeiou =  $(this).parent().attr("id");
+				var $row = $(this).closest('tr');
+       			var id_arxeiou = $row.attr("id");
+				var filename = $row.find('.filename').text().trim();
+
+				//console.log('id_arxeiou: ', id_arxeiou);
+				//console.log('filename: ', filename);
+
+				//φόρτωσε τα δεδομένα στο popup
+				$("#popup_old_filename").val(filename);
+				$("#popup_new_filename").val(filename);
+				$("#selected_id_arxeiou").val(id_arxeiou);
+				
+				//εμφάνισε το Popup
+				$("#renameModal").show();
+			});
+
+			$("#table_arxeia").on("click",'.deletefile_button', function(){	 
+
+				var $row = $(this).closest('tr');
+       			var id_arxeiou = $row.attr("id");
+				var filename = $row.find('.filename').text().trim();
+				var upload_folder =  $('#pdfuploadfolder').val();
+				var rns_module_id = jQuery("#rns_module_id").val();
+
+				// Grab the token name from Joomla options or directly from the form input element
+				const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+
+				//console.log('id_arxeiou: ', id_arxeiou);
+				//console.log('filename: ', filename);
+
+				//Ρώτησε για επιβεβαίωση
+				if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε το συγκεκριμένο αρχείο (' + filename +');\n')) {
+					//console.log('Ο χρήστης επέλεξε να μην διαγράψει το αρχείο ' + filename + ' | upload_folder: ' + upload_folder + '.');
+					return;
+				}
+			
+				console.log('Προς διαγραφή: Αρχείο ' + filename + ' | id: ' + id_arxeiou + ' | upload_folder: ' + upload_folder);	
+				var ajaxdeleteurl = "index.php?option=com_ajax&module=rnsupload&method=deletePdf&format=raw";
+			
+				//δειξε το loading image
+				document.getElementById("loading").style.display ="block";
+				sleep(500).then(() => {	
+					jQuery.ajax({
+						type: 'POST',
+						url: ajaxdeleteurl, 
+						data: {
+							id_arxeiou: id_arxeiou, 
+							filename : filename, 
+							upload_folder: upload_folder, 
+							rns_module_id: rns_module_id,
+							[tokenName] : 1
+						},
+						success: function(data) {
+							//hide loading image
+							document.getElementById("loading").style.display = "none";
+							try {
+								var ssdata = JSON.parse(data).data;
+							} catch (e) {
+								alert("Το παρακάτω σφάλμα βρέθηκε:\n" + data);
+								return;
+							}
+										
+							//Εμφάνισε στον χρήστη τις αλλαγές
+							if (ssdata.errors == "") {
+								//remove the row
+								jQuery("#" + id_arxeiou).remove();
+								Joomla.renderMessages({'success': ['Το αρχείο διαγράφηκε επιτυχώς.']}, '#system-message-container', true, 8000);
+							}
+							else
+								alert("Βρέθηκε σφάλμα!\n" + ssdata.errors);
+						},
+						error: function(xhr, status, error) {
+							//hide loading image
+							document.getElementById("loading").style.display = "none";
+							//show the error
+							//alert( "Σφάλμα! Αδυναμία διαγραφής αρχείου!\n" + xhr.responseText + "\n" + error);
+							Joomla.renderMessages({'danger': ['Αδυναμία διαγραφής αρχείου!\n.']}, '#system-message-container', true, 18000);
+						}
+					});
+				}); //end sleep	
+			});
+
+		});
+	</script>
+
 <script>
 	function sleep(ms) {
 		return new Promise(resolve => setTimeout(resolve, ms));
@@ -151,14 +246,27 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 	}
 	
 	function createFormData(pdf) {
+		
 		var formPDF = new FormData();
+
+		// Grab the token name from Joomla options or directly from the form input element
+		const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+
+		// Append the token to your FormData object
+		// Joomla expects the token name as the key, and '1' as the value
+		formPDF.append(tokenName, '1');
+
+		// Append Module Id to get params
+		var rns_module_id = jQuery("#rns_module_id").val();
+		formPDF.append('rns_module_id', rns_module_id);
+
 		for (i = 0; i < pdf.length; i++) {
-			//formPDF.append('userPDF', pdf[0]);
 			formPDF.append('userPDF[]', pdf[i]);
 		}
+
 		//console.log('pdf length is ' + pdf.length);
 		formPDF.append('PdfUploadFolder', document.getElementById("pdfuploadfolder").value);
-		formPDF.append('MaxFileSize', 25165824);
+		//formPDF.append('MaxFileSize', 25165824);
 		formPDF.append('menu_catid', document.getElementById("menu_catid").value);
 		uploadFormData(formPDF);
 	}
@@ -193,56 +301,11 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 				},
 				error: function(xhr, status, error){
 					document.getElementById("loading").style.display = "none";
-					alert( "Σφάλμα: Αδυναμία καταχώρησης νέων αρχείων\n" + error);
+					alert( "Σφάλμα: Αδυναμία καταχώρησης νέων αρχείων\n" + xhr.responseText + "\n" + error);
 					console.log(xhr);
 				}
 			});
 		});
-	}
-
-	function delete_file(id_arxeiou, upload_folder, filename) {
-		//Ρώτησε για επιβεβαίωση
-		if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε το συγκεκριμένο αρχείο (' + filename +');\n')) {
-			console.log('Ο χρήστης επέλεξε να μην διαγράψει το αρχείο ' + filename + ' | upload_folder: ' + upload_folder + '.');
-			return;
-		}
-		
-		console.log('Προς διαγραφή: Αρχείο ' + filename + ' | id: ' + id_arxeiou + ' | upload_folder: ' + upload_folder);	
-		var ajaxdeleteurl = "index.php?option=com_ajax&module=rnsupload&method=deletePdf&format=raw";
-		
-			//δειξε το loading image
-			document.getElementById("loading").style.display ="block";
-			sleep(500).then(() => {	
-				jQuery.ajax({
-					type: 'POST',
-					url: ajaxdeleteurl, 
-					data: {id_arxeiou: id_arxeiou, filename : filename, upload_folder: upload_folder},
-					success: function(data) {
-						//hide loading image
-						document.getElementById("loading").style.display = "none";
-						try {
-							var ssdata = JSON.parse(data).data;
-						} catch (e) {
-							alert("Το παρακάτω σφάλμα βρέθηκε:\n" + data);
-							return;
-						}
-									
-						//Εμφάνισε στον χρήστη τις αλλαγές
-						if (ssdata.error == "") {
-							//remove the row
-							jQuery("#" + id_arxeiou).remove();
-						}
-						else
-							alert("Βρέθηκε σφάλμα!\n" + ssdata.error);
-					},
-					error: function(xhr, status, error) {
-						//hide loading image
-						document.getElementById("loading").style.display = "none";
-						//show the error
-						alert( "Σφάλμα: " + error + "\nΑδυναμία διαγραφής αρχείου!" );
-					}
-				});
-			}); //end sleep	
 	}
 	
 	function rename_file(id_arxeiou, upload_folder, filename) {
@@ -256,13 +319,20 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 	}
 
 	function SaveNow(editing) {
-		//Ο χρήστης πάτησε αποθήκευση στην μετονομασία του αρχείου
+		
+		// User has clicked on save for renaming the file
 		var new_filename = jQuery("#popup_new_filename").val();
 		var old_filename = jQuery("#popup_old_filename").val();
 		var id_arxeiou = jQuery("#selected_id_arxeiou").val();
 		var upload_folder = jQuery("#pdfuploadfolder").val();
-		console.log('Προς μετονομασία: Αρχείο ' + old_filename + ' | id: ' + id_arxeiou + ' | upload_folder: ' + upload_folder);	
-		console.log('Νέο όνομα αρχείου: ' + new_filename);
+		var rns_module_id = jQuery("#rns_module_id").val();
+
+		// Grab the token name from Joomla options or directly from the form input element
+		const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+
+		console.log('Renaming: File ' + old_filename + ' | id: ' + id_arxeiou + ' | upload_folder: ' + upload_folder);	
+		console.log('New file name: ' + new_filename);
+
 		var ajaxrenameurl = "index.php?option=com_ajax&module=rnsupload&method=renamePdf&format=raw";
 			//δειξε το loading image
 			document.getElementById("loading").style.display ="block";
@@ -270,7 +340,14 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 				jQuery.ajax({
 					type: 'POST',
 					url: ajaxrenameurl, 
-					data: {id_arxeiou: id_arxeiou, old_filename : old_filename, new_filename : new_filename, upload_folder: upload_folder},
+					data: {
+						id_arxeiou: id_arxeiou, 
+						old_filename : old_filename, 
+						new_filename : new_filename, 
+						upload_folder: upload_folder,
+						rns_module_id: rns_module_id,
+						[tokenName]: 1
+					},
 					success: function(data) {
 						//hide loading image
 						document.getElementById("loading").style.display = "none";
@@ -285,7 +362,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 						//hide loading image
 						document.getElementById("loading").style.display = "none";
 						//show the error
-						alert( "Σφάλμα: " + error + "\nΑδυναμία μετονομασίας αρχείου!" );
+						alert( "Σφάλμα, Αδυναμία μετονομασίας αρχείου!" + xhr.responseText + "\n" + error );
 					}
 				});
 			}); //end sleep			
@@ -334,7 +411,15 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 		<!-- Modal content -->
 		<div class="modal_content">
 			<span class="help_close modal_close_btn">&times;</span>
-				<?php echo "{article efarmogi_upload}{/article}" ?>
+				<?php //echo "{article efarmogi_upload}{/article}" ?>
+				<?php 
+					$article = modRnsUploadHelper::getJoomlaArticle('efarmogi_upload');
+
+					if ($article) {
+						echo $article->introtext;
+						echo $article->fulltext;
+					}
+				?>
 		</div>
 	</div>
 	
@@ -345,331 +430,285 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 	</button>
 </div>
 
-<div style="float"
-
 <div class="clearfix"></div>
 
-<?php endif; ?>
+<?php endif; //end of if user_grant_upload ?>
 	
 <div class="<?php echo $moduleclass_sfx;?>">
+
+	<input type="hidden" id="rns_module_id" value="<?php echo (int) $module->id; ?>" />
+
 	<?php if ($SelectedImage) { ?>
-	<div style="float:left; padding-right: 10px;">
-		<img src="<?php echo $SelectedImage; ?>" alt="<?php echo basename($SelectedImage); ?>" width="500" height="231">
-	</div>
+		<div style="float:left; padding-right: 10px;">
+			<img src="<?php echo $SelectedImage; ?>" alt="<?php echo basename($SelectedImage); ?>" width="500" height="231">
+		</div>
 	<?php } ?>
 	
 	<?php
-	//Check for new files when user uses SAMBA for uploading files!
-	//TODO: Ο φάκελος SambaFolder να αλλάζει κάθε φορά.
-	//Τώρα προς το παρόν να είναι ο safety_and_heath
-	$SambaFolder = "images" . DIRECTORY_SEPARATOR . "safety_and_heath" . DIRECTORY_SEPARATOR;
-	$source_path = "files" . DIRECTORY_SEPARATOR . "rns_upload" . DIRECTORY_SEPARATOR;
-		
-	modRnsUploadHelper::movingUploadedFiles($source_path, $SambaFolder);
+		//fetch files by category
+		//use db - we don't want to show the actual path of pdf. Because if we do, then it will available publicly!
+		$files = modRnsUploadHelper::getFilesByCategory($menu_catid);
 
-	$efu_parent = "images" . DIRECTORY_SEPARATOR . $SelectedUploadFolder;
-	$fileonlypath = $fpath .DIRECTORY_SEPARATOR . $efu_parent;
-	$jpath = JPATH_SITE;
-	$onlypath = $jpath .DIRECTORY_SEPARATOR . $efu_parent . DIRECTORY_SEPARATOR;	
-		
-	//now search for files to display
-	$files = array();	
-		
-	//μέχρι πόσο παλιά να εμφανίζει
-	$days = 3650; //3650 έως 10 χρόνια πριν 365 * 10
-	
-	$current_date = DateTime::createFromFormat('d-m-Y', date("d-m-Y"));
-		
-	//Μετρητής για να εμφανίσει μέχρι συγκεκριμένο αριθμό αρχείων
-	$files_counter = 1;
-	$numfilestodisplay = 50;
-
-	//Opens directory
-	if ($myDirectory = opendir($onlypath)) {
-		
-	// Gets each entry
-	while (false !== ($entryName = readdir($myDirectory))) {
-		$is_permitted_format = substr($entryName, -3);
-		$is_permitted_format_v4 = substr($entryName, -4);
-		if ($entryName != "." && $entryName != ".." && 
-		($is_permitted_format == "pdf" || $is_permitted_format == "PDF" 
-			|| $is_permitted_format == "zip" || $is_permitted_format == "ZIP"
-			|| $is_permitted_format == "doc" || $is_permitted_format == "DOC"
-			|| $is_permitted_format == "xls" || $is_permitted_format == "XLS"
-			|| $is_permitted_format == "ppt" || $is_permitted_format == "PPT"
-			|| $is_permitted_format == "mp4" || $is_permitted_format == "MP4"
-			|| $is_permitted_format == "msg" || $is_permitted_format == "MSG"
-			|| $is_permitted_format == "png" || $is_permitted_format == "PNG"
-			|| $is_permitted_format_v4 == "docx" || $is_permitted_format_v4 == "DOCX"
-			|| $is_permitted_format_v4 == "xlsx" || $is_permitted_format_v4 == "XLSX"
-			|| $is_permitted_format_v4 == "xlsb" || $is_permitted_format_v4 == "XLSB"
-			|| $is_permitted_format_v4 == "pptx" || $is_permitted_format_v4 == "PPTX"
-		)) {
-			$dirArray[]=$entryName;
-				$files[]= $onlypath.$entryName;
-		}
-	}
-		
-	// Closes directory
-	closedir($myDirectory);
-	
-	}
+		$efu_parent = "images" . DIRECTORY_SEPARATOR . $SelectedUploadFolder;
+		$fileonlypath = $fpath .DIRECTORY_SEPARATOR . $efu_parent;
+		$jpath = JPATH_SITE;
+		$onlypath = $jpath .DIRECTORY_SEPARATOR . $efu_parent . DIRECTORY_SEPARATOR;	
 			
-	// sort files
-	usort($files, "modRnsUploadHelper::filetime_callback");
+		//μέχρι πόσο παλιά να εμφανίζει
+		$days = 3650; //3650 έως 10 χρόνια πριν 365 * 10
 		
-	// Counts elements in array
-	$indexCount=count($files);
-	//error_log("indexCount is: " . $indexCount);
+		$current_date = DateTime::createFromFormat('d-m-Y', date("d-m-Y"));
+			
+		//Μετρητής για να εμφανίσει μέχρι συγκεκριμένο αριθμό αρχείων
+		$files_counter = 1;
+		$numfilestodisplay = 50;
+
+		// Counts elements in array
+		if (!empty($files)) 
+			$indexCount = count($files);
+		else
+			$indexCount = 0;
 		
-	//προχώρα μόνο εφόσον βρέθηκαν αρχεία
-	if ($indexCount) : ?>
+		//προχώρα μόνο εφόσον βρέθηκαν αρχεία
+		if ($indexCount) : ?>
 
 	<script>
-	function sortTable(element, n) {
-	  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-	  table = document.getElementById(element);
-	  switching = true;
-	  //Set the sorting direction to ascending:
-	  dir = "asc";
-	  /*Make a loop that will continue until
-	  no switching has been done:*/
-	  while (switching) {
-		//start by saying: no switching is done:
-		switching = false;
-		rows = table.getElementsByTagName("TR");
-		/*Loop through all table rows (except the
-		first, which contains table headers):*/
-		for (i = 1; i < (rows.length - 1); i++) {
-		  //start by saying there should be no switching:
-		  shouldSwitch = false;
-		  /*Get the two elements you want to compare,
-		  one from current row and one from the next:*/
-		  x = rows[i].getElementsByTagName("TD")[n];
-		  y = rows[i + 1].getElementsByTagName("TD")[n];
-		  /*check if the two rows should switch place,
-		  based on the direction, asc or desc:*/
-		  if (dir == "asc") {
-			//if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-			  if (jQuery(x).text() > jQuery(y).text()) {
-			  //if so, mark as a switch and break the loop:
-			  shouldSwitch= true;  
-			  break;
-			}
-		  } else if (dir == "desc") {
-			//if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-				if (jQuery(x).text() < jQuery(y).text()) {
-			  //if so, mark as a switch and break the loop:
-			  shouldSwitch= true;
-			  break;
-			}
-		  }
-		}
-		if (shouldSwitch) {
-		  /*If a switch has been marked, make the switch
-		  and mark that a switch has been done:*/
-		  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-		  switching = true;
-		  //Each time a switch is done, increase this count by 1:
-		  switchcount ++;
-		} else {
-		  /*If no switching has been done AND the direction is "asc",
-		  set the direction to "desc" and run the while loop again.*/
-		  if (switchcount == 0 && dir == "asc") {
-			dir = "desc";
-			switching = true;
-		  }
-		}
-	  }
-  
-		//Βάλε το εικονίδιο της ταξινόμησης
-		var headers_length = table.getElementsByTagName("TH").length;
-		//var headers_length = table.getElementsByClassName("rTableHead").length;
-		
-		for (header = 1; header < headers_length ; header++) {
-		var rheader = table.getElementsByTagName("TH")[header];
-			if (dir == "asc") {
-				if (header == n) {
-					if ((rheader.innerHTML).substr(-4, 4) != "</i>")
-						rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-down2"></i>';
-				else
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-down2"></i>';
-				}
-				else {
-					if ((rheader.innerHTML).substr(-4, 4) === "</i>")
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
-				}
-			}
-			else if (dir == "desc") {
-				if (header == n) {
-					if ((rheader.innerHTML).substr(-4, 4) != "</i>")
-						rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-up2"></i>';
-					else
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-up2"></i>';
-				}
-				else {
-					if ((rheader.innerHTML).substr(-4, 4) === "</i>")
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
-				}
-			}
-			//console.log("innerHTML is " + rheader.innerHTML);
-		}
-	}
 
-	function sortInteger(element, n, type) {
-	  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-	  table = document.getElementById(element);
-	  switching = true;
-	  //Set the sorting direction to ascending:
-	  dir = "asc";
-	  /*Make a loop that will continue until
-	  no switching has been done:*/
-	  while (switching) {
-		//start by saying: no switching is done:
-		switching = false;
-		rows = table.getElementsByTagName("TR");
-		/*Loop through all table rows (except the
-		first, which contains table headers):*/
-		for (i = 1; i < (rows.length - 1); i++) {
-		  //start by saying there should be no switching:
-		  shouldSwitch = false;
-		  /*Get the two elements you want to compare,
-		  one from current row and one from the next:*/
-		  x = rows[i].getElementsByTagName("TD")[n];
-		//console.log("x = " + x.innerText);
-		  y = rows[i + 1].getElementsByTagName("TD")[n];
-
-		
-		  //if the user sorts date fields
-		  if (type == "date") {
-			  var xx =(x.innerHTML).split('-');
-			  var xxx = "";
-			  var yy =(y.innerHTML).split('-');
-			  var yyy = "";
-			 if (xx != "") {var xxx = new Date(xx[2],xx[1],xx[0]-1); }// YY, mm, dd
-			 if (yy != "") {var yyy = new Date(yy[2],yy[1],yy[0]-1); } 
-			   if (dir == "asc") {
-				if (xxx > yyy) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  //alert ("x=" + xx + " and y =" +yy);
-				  break;
-				}
-			  } else if (dir == "desc") {
-				if (xxx < yyy) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  break;
-				}
-			  }
-		  }
-		  else if (type == "dec") {
-			//Zuerst ersetzen sie leer mit null    -->  0
-			var xx = (x.innerHTML).replace('', '0');
-			var yy = (y.innerHTML).replace('', '0');
-
-			//Weiter ersetzen sie der Punkt mit leer  . --> 
-			var xxxx = xx.replace(/\./g, '');
-			var yyyy = yy.replace(/\./g, '');
+		function sortTable(element, n) {
+		var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+		table = document.getElementById(element);
+		switching = true;
+		//Set the sorting direction to ascending:
+		dir = "asc";
+		//Make a loop that will continue until no switching has been done:
+		while (switching) {
+			//start by saying: no switching is done:
+			switching = false;
+			rows = table.getElementsByTagName("TR");
+			//Loop through all table rows (except the first, which contains table headers):
+			for (i = 1; i < (rows.length - 1); i++) {
 			
-			//Letzte ersetzen sie das Koma mit dem Punkt  , --> .
-			var xxx = parseFloat(xxxx.replace(/,/g, '.'));
-			var yyy = parseFloat(yyyy.replace(/,/g, '.')); 
+				//start by saying there should be no switching:
+				shouldSwitch = false;
 			
-			 if (dir == "asc") {
-				if (xxx > yyy) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  //alert ("x=" + xx + " and y =" +yy);
-				  break;
+				//Get the two elements you want to compare,  one from current row and one from the next:
+				x = rows[i].getElementsByTagName("TD")[n];
+				y = rows[i + 1].getElementsByTagName("TD")[n];
+			
+				//check if the two rows should switch place, based on the direction, asc or desc:
+				if (dir == "asc") {
+					//if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+					if (jQuery(x).text() > jQuery(y).text()) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;  
+					break;
+					}
+				} else if (dir == "desc") {
+					//if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+						if (jQuery(x).text() < jQuery(y).text()) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					break;
+					}
 				}
-			  } else if (dir == "desc") {
-				if (xxx < yyy) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  break;
-				}
-			  }
-		  }
-		  else {
-			   /*check if the two rows should switch place,
-				based on the direction, asc or desc:*/
-			  if (dir == "asc") {
-				if (x.innerText - y.innerText > 0) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  break;
-				}
-			  } else if (dir == "desc") {
-				if (x.innerText - y.innerText < 0) {
-				  //if so, mark as a switch and break the loop:
-				  shouldSwitch= true;
-				  break;
-				}
-			  }
-		  }
-		}
-		if (shouldSwitch) {
-		  /*If a switch has been marked, make the switch
-		  and mark that a switch has been done:*/
-		  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-		  switching = true;
-		  //Each time a switch is done, increase this count by 1:
-		  switchcount ++;
-		} else {
-		  /*If no switching has been done AND the direction is "asc",
-		  set the direction to "desc" and run the while loop again.*/
-		  if (switchcount == 0 && dir == "asc") {
-			dir = "desc";
+			}
+			if (shouldSwitch) {
+			
+				//If a switch has been marked, make the switch and mark that a switch has been done:
+			rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
 			switching = true;
-		  }
+			
+			//Each time a switch is done, increase this count by 1:
+			switchcount ++;
+			} else {
+			//If no switching has been done AND the direction is "asc", set the direction to "desc" and run the while loop again.
+			if (switchcount == 0 && dir == "asc") {
+				dir = "desc";
+				switching = true;
+			}
+			}
 		}
-	  }
-		//Βάλε το εικονίδιο της ταξινόμησης
-		var headers_length = table.getElementsByTagName("TH").length;
-		//var headers_length = table.getElementsByClassName("rTableHead").length;
-		
-		for (header = 1; header < headers_length ; header++) {
+	
+			//Βάλε το εικονίδιο της ταξινόμησης
+			var headers_length = table.getElementsByTagName("TH").length;
+			//var headers_length = table.getElementsByClassName("rTableHead").length;
+			
+			for (header = 1; header < headers_length ; header++) {
 			var rheader = table.getElementsByTagName("TH")[header];
-			if (dir == "asc") {
-				if (header == n) {
-					if ((rheader.innerHTML).substr(-4, 4) != "</i>")
-						rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-down2"></i>';
-				else
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-down2"></i>';
-				}
-				else {
-					if ((rheader.innerHTML).substr(-4, 4) === "</i>")
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
-				}
-			}
-			else if (dir == "desc") {
-				if (header == n) {
-					if ((rheader.innerHTML).substr(-4, 4) != "</i>")
-						rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-up2"></i>';
+				if (dir == "asc") {
+					if (header == n) {
+						if ((rheader.innerHTML).substr(-4, 4) != "</i>")
+							rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-down2"></i>';
 					else
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-up2"></i>';
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-down2"></i>';
+					}
+					else {
+						if ((rheader.innerHTML).substr(-4, 4) === "</i>")
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
+					}
 				}
-				else {
-					if ((rheader.innerHTML).substr(-4, 4) === "</i>")
-						rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
+				else if (dir == "desc") {
+					if (header == n) {
+						if ((rheader.innerHTML).substr(-4, 4) != "</i>")
+							rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-up2"></i>';
+						else
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-up2"></i>';
+					}
+					else {
+						if ((rheader.innerHTML).substr(-4, 4) === "</i>")
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
+					}
+				}
+				//console.log("innerHTML is " + rheader.innerHTML);
+			}
+		}
+
+		function sortInteger(element, n, type) {
+		var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+		table = document.getElementById(element);
+		switching = true;
+		//Set the sorting direction to ascending:
+		dir = "asc";
+		/*Make a loop that will continue until
+		no switching has been done:*/
+		while (switching) {
+			//start by saying: no switching is done:
+			switching = false;
+			rows = table.getElementsByTagName("TR");
+			/*Loop through all table rows (except the
+			first, which contains table headers):*/
+			for (i = 1; i < (rows.length - 1); i++) {
+			//start by saying there should be no switching:
+			shouldSwitch = false;
+			/*Get the two elements you want to compare,
+			one from current row and one from the next:*/
+			x = rows[i].getElementsByTagName("TD")[n];
+			//console.log("x = " + x.innerText);
+			y = rows[i + 1].getElementsByTagName("TD")[n];
+
+			
+			//if the user sorts date fields
+			if (type == "date") {
+				var xx =(x.innerHTML).split('-');
+				var xxx = "";
+				var yy =(y.innerHTML).split('-');
+				var yyy = "";
+				if (xx != "") {var xxx = new Date(xx[2],xx[1],xx[0]-1); }// YY, mm, dd
+				if (yy != "") {var yyy = new Date(yy[2],yy[1],yy[0]-1); } 
+				if (dir == "asc") {
+					if (xxx > yyy) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					//alert ("x=" + xx + " and y =" +yy);
+					break;
+					}
+				} else if (dir == "desc") {
+					if (xxx < yyy) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					break;
+					}
 				}
 			}
-			//console.log("innerHTML is " + rheader.innerHTML);
-		}
-	}
-	</script>
+			else if (type == "dec") {
+				//Zuerst ersetzen sie leer mit null    -->  0
+				var xx = (x.innerHTML).replace('', '0');
+				var yy = (y.innerHTML).replace('', '0');
 
+				//Weiter ersetzen sie der Punkt mit leer  . --> 
+				var xxxx = xx.replace(/\./g, '');
+				var yyyy = yy.replace(/\./g, '');
+				
+				//Letzte ersetzen sie das Koma mit dem Punkt  , --> .
+				var xxx = parseFloat(xxxx.replace(/,/g, '.'));
+				var yyy = parseFloat(yyyy.replace(/,/g, '.')); 
+				
+				if (dir == "asc") {
+					if (xxx > yyy) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					//alert ("x=" + xx + " and y =" +yy);
+					break;
+					}
+				} else if (dir == "desc") {
+					if (xxx < yyy) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					break;
+					}
+				}
+			}
+			else {
+				/*check if the two rows should switch place,
+					based on the direction, asc or desc:*/
+				if (dir == "asc") {
+					if (x.innerText - y.innerText > 0) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					break;
+					}
+				} else if (dir == "desc") {
+					if (x.innerText - y.innerText < 0) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch= true;
+					break;
+					}
+				}
+			}
+			}
+			if (shouldSwitch) {
+			/*If a switch has been marked, make the switch
+			and mark that a switch has been done:*/
+			rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+			switching = true;
+			//Each time a switch is done, increase this count by 1:
+			switchcount ++;
+			} else {
+			/*If no switching has been done AND the direction is "asc",
+			set the direction to "desc" and run the while loop again.*/
+			if (switchcount == 0 && dir == "asc") {
+				dir = "desc";
+				switching = true;
+			}
+			}
+		}
+			//Βάλε το εικονίδιο της ταξινόμησης
+			var headers_length = table.getElementsByTagName("TH").length;
+			//var headers_length = table.getElementsByClassName("rTableHead").length;
+			
+			for (header = 1; header < headers_length ; header++) {
+				var rheader = table.getElementsByTagName("TH")[header];
+				if (dir == "asc") {
+					if (header == n) {
+						if ((rheader.innerHTML).substr(-4, 4) != "</i>")
+							rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-down2"></i>';
+					else
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-down2"></i>';
+					}
+					else {
+						if ((rheader.innerHTML).substr(-4, 4) === "</i>")
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
+					}
+				}
+				else if (dir == "desc") {
+					if (header == n) {
+						if ((rheader.innerHTML).substr(-4, 4) != "</i>")
+							rheader.innerHTML  = rheader.innerHTML  + '<i class="icon-arrow-up2"></i>';
+						else
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<')) + '<i class="icon-arrow-up2"></i>';
+					}
+					else {
+						if ((rheader.innerHTML).substr(-4, 4) === "</i>")
+							rheader.innerHTML  = (rheader.innerHTML).substr(0, (rheader.innerHTML).indexOf('<'));
+					}
+				}
+				//console.log("innerHTML is " + rheader.innerHTML);
+			}
+		}
+	</script>
 		
 	<?php if ($user_grant_upload == true) : ?>
-		<?php /*
-		<div id="rns_pdf_files_wrapper" class="edit_elements" style="display:none;float:left">
-			<input id="eggrafo" type="file" accept="application/pdf" multiple="multiple">
-			<div id="rns_pdf_files_drop_area">
-				<h3 class="rns_pdf_files_drop_text">Σύρετε και αφήστε εδώ τα έγγραφα</h3>
-			</div>
-		</div>
-		*/ ?>
+		
 		<div id="rns_pdf_files_wrapper" class="edit_elements" style="display:none;">
 			<div style="display:none;">
 				<input id="eggrafo" type="file" accept=".xlsx, .xlsb, .xls, .doc, .docx, .ppt, .pptx, .txt, .pdf, .zip, .png, .jpg, .mp4, .msg" multiple="multiple">
@@ -693,21 +732,8 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 				<thead>
 					<tr>
 						<th style="display:none;"></th>
-						
 						<th onclick="sortTable('table_arxeia',   1)">Όνομα Εγγράφου</th>
 						<th onclick="sortInteger('table_arxeia', 2,'date')">Ημερομηνία εγγράφου</th>
-						
-						<?php //have to change javascript code in order for sorting tooltip to work
-							/*
-						<th>
-							<span onclick="sortTable('table_arxeia',   1)" data-content="<?php echo JText::_('JGLOBAL_CLICK_TO_SORT_THIS_COLUMN');?>" data-placement="top" data-toggle="popover" data-trigger="hover" title="Όνομα Εγγράφου" class="hasPopover">Όνομα Εγγράφου
-							</span>
-						<th>
-							<span onclick="sortInteger('table_arxeia', 2,'date')" data-content="<?php echo JText::_('JGLOBAL_CLICK_TO_SORT_THIS_COLUMN');?>" data-placement="top" data-toggle="popover" data-trigger="hover" title="Ημερομηνία εγγράφου" class="hasPopover">Ημερομηνία εγγράφου
-							</span>
-						</th>
-						*/ ?>
-						
 						<th>Μέγεθος Αρχείου</th>  
 						<?php if ($user_grant_upload) :  ?>
 							<th class="edit_elements" style="display:none;">Επεξ.</th>
@@ -716,21 +742,10 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 					</tr>
 				</thead>
 				<tbody>
-	<?php 
-	
-		// find the last file
-		$reallyLastModified = end($files);
-		
-		// find the last modified date
-		$reallyLas_d = date("d-m-Y", filemtime($reallyLastModified));
-		$reallyLastModified_d = DateTime::createFromFormat('d-m-Y', $reallyLas_d);
-		//echo "LAST " . $reallyLastModified_d->format("d-m-Y");
-
-		// Loops through the array of files	in reverse order
+	<?php 	
 		for($index = $indexCount -1; $index >= 0; $index--) {
-			
 			// Gets File Name
-			$filename = basename($files[$index]);
+			$filename = $files[$index]->filename;
 			$file_icon = '';
 
 			//get file type
@@ -758,37 +773,38 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 			elseif ($file_type == "png" || $file_type == "PNG")
 				$file_icon = '<i class="fas fa-w-14 fa-file-image" style="color: #359716; font-size:22px;"></i>';	
 			//error_log("filename: " . $filename . " and index: " . $files[$index]);
-			$filepath = $fpath .DIRECTORY_SEPARATOR . $efu_parent . DIRECTORY_SEPARATOR . $filename . '?t=' .  time();	
-			//$ff = $files[$index];
+			//$filepath = $fpath .DIRECTORY_SEPARATOR . $efu_parent . DIRECTORY_SEPARATOR . $filename . '?t=' .  time();
+			$realpath = $onlypath . $filename;
+			$filepath = Route::_('index.php?option=com_ajax&module=rnsupload&method=downloadFile&format=raw&id=' . (int) $files[$index]->id );
 			
 			// Gets Date Modified
-			$moddd = date("d-m-Y", filemtime($files[$index]));
-			$modtime_d = DateTime::createFromFormat('d-m-Y', $moddd);
-			$modtime = $modtime_d->format("d-m-Y");
-			//error_log("| date: " . $modtime);
+			if ($realpath && file_exists($realpath)) {
+				$moddd = date("d-m-Y", filemtime($realpath));
+				$modtime_d = DateTime::createFromFormat('d-m-Y', $moddd);
+				$modtime = $modtime_d->format("d-m-Y");
 
-			// Separates directories, and performs operations on those directories
-			if(is_dir($files[$index])) {
-				$size="&lt;Directory&gt;";
-				$filelink = "";
+				$size = modRnsUploadHelper::formatSizeUnits(filesize($realpath));
 			}
-			// File-only operations
 			else {
-				 $size = modRnsUploadHelper::formatSizeUnits(filesize($files[$index]));
-				if ($size != "4096") {
-					$filelink = $file_icon . '<a href="'. $filepath . 
-										'" target="blank_" download="' . $filename . '"> ' . $filename . '</a> ';
-					$filelink_withsize = $file_icon . '<a href="'. $filepath . 
-										'" target="blank_">' . $filename . ' (' . $size . ')</a> ';
-										
-					$filelink_first = $file_icon . '<a href="'. $filepath . 
-										'" target="blank_">' . $filename . '</a> ';					
-				}
-				else {
-					$filelink = "";
-				}
+				// Default values if the file is missing
+				$modtime = date("d-m-Y");
+				$modtime_d = new DateTime();
+				$size = "0 KB";
 			}
 			
+			if ($size != "4096") {
+				$filelink = $file_icon . '<a href="'. $filepath . 
+									'" target="blank_" download="' . $filename . '"> ' . $filename . '</a> ';
+				$filelink_withsize = $file_icon . '<a href="'. $filepath . 
+									'" target="blank_">' . $filename . ' (' . $size . ')</a> ';
+									
+				$filelink_first = $file_icon . '<a href="'. $filepath . 
+									'" target="blank_">' . $filename . '</a> ';
+			}
+			else {
+				$filelink = "";
+			}
+
 			if (($filelink != "") && (date_diff($current_date,$modtime_d)->format('%R%a days') < $days) && ($files_counter < $numfilestodisplay)) { // σύγκριση με πιο πρόσφατη ημερομηνία και μετρητή
 			?>
 				<tr id="<?php echo "arxeio_" . $files_counter; ?>" class="cool">
@@ -798,12 +814,12 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 					<td><?php echo $size; ?></td>
 					<?php if ($user_grant_upload) :  ?>
 						<td class="edit_elements" style="display:none;">
-							<span onclick="rename_file('<?php echo "arxeio_" . $files_counter . "','" . $SelectedUploadFolder . "','" . $filename; ?>')" style="clear:both; padding-left: 2px;" class="edit_button">
+							<span style="clear:both; padding-left: 2px;" class="edit_button">
 								<i class="fas fa-2x fa-edit"></i>
 							</span>
 						</td>
 						<td class="edit_elements" style="display:none;">
-							<span onclick="delete_file('<?php echo "arxeio_" . $files_counter . "','" . $SelectedUploadFolder . "','" . $filename; ?>')" style="clear:both; padding-left: 2px;" class="close_button">
+							<span style="clear:both; padding-left: 2px;" class="deletefile_button close_button">
 								<i class="fa fa-2x fa-times"></i>
 							</span>
 						</td>	
@@ -825,14 +841,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 		}
 	</script>
 	<?php if ($user_grant_upload == true) : ?>
-		<?php
-		/* <div id="rns_pdf_files_wrapper" class="edit_elements" style="display:none;float:left">
-			<input id="eggrafo" type="file" accept="application/pdf" multiple="multiple">
-			<div id="rns_pdf_files_drop_area">
-				<h3 class="rns_pdf_files_drop_text">Σύρετε και αφήστε εδώ τα έγγραφα</h3>
-			</div>
-		</div>
-		*/ ?>
+		
 		
 		<div id="rns_pdf_files_wrapper" class="edit_elements" style="display:none;">
 			<div style="display:none;">

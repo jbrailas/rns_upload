@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="4.0" client="site" method="upgrade">
-	<name>RNS Upload and Files Display Module for Joomla 5</name>
+<extension type="module" version="5.0" client="site" method="upgrade">
+	<name>RNS Upload and Files Display Module for Joomla 5+</name>
 	<author>Giannis Brailas</author>
-	<creationDate>Nov 2025</creationDate>
-	<copyright>Copyright (C) 2025 Giannis Brailas. All rights reserved.</copyright>
+	<creationDate>June 2026</creationDate>
+	<copyright>Copyright (C) 2026 Giannis Brailas. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
-	<authorEmail>jbrailas@rns-systems.eu</authorEmail>
-	<authorUrl>https://www.rns-systems.eu</authorUrl>
-	<version>1.2.1</version>
-	<description>RNS Upload and Files Display Module for Joomla 5 by Giannis Brailas</description>
+	<authorEmail>ioannis@brailas.gr</authorEmail>
+	<authorUrl>https://www.brailas.gr</authorUrl>
+	<version>1.3.1</version>
+	<description>RNS Upload and Files Display Module for Joomla by Giannis Brailas</description>
 	<files>
 		<filename module="mod_rnsupload">mod_rnsupload.php</filename>
 		<filename>index.html</filename>
@@ -17,6 +17,29 @@
 		<folder>tmpl</folder>
 		<folder>assets</folder>
 	</files>
+	
+	<updateservers>
+		<server type="extension" priority="1" name="RNS Upload Updates">
+			https://raw.githubusercontent.com/jbrailas/rns_upload/refs/heads/main/update/rns_upload_updates.xml
+		</server>
+	</updateservers>
+	
+	<!-- Automatically runs SQL during installation -->
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/install.mysql.utf8.sql</file>
+            <file driver="postgresql" charset="utf8">sql/postgresql/install.postgresql.utf8.sql</file>
+        </sql>
+    </install>
+
+    <!-- handle uninstall -->
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/uninstall.mysql.utf8.sql</file>
+            <file driver="postgresql" charset="utf8">sql/postgresql/uninstall.postgresql.utf8.sql</file>
+        </sql>
+    </uninstall>
+	
 	<config>
 		<fields name="params">
 			<fieldset name="basic">
@@ -72,27 +95,5 @@
 			</fieldset>
 		</fields>
 	</config>
-	
-	<updateservers>
-		<server type="extension" priority="1" name="RNS Upload Updates">
-			https://raw.githubusercontent.com/jbrailas/rns_upload/main/update/rns_upload_updates.xml
-		</server>
-	</updateservers>
-	
-	<!-- Automatically runs SQL during installation -->
-    <install>
-        <sql>
-            <file driver="mysql" charset="utf8">sql/mysql/install.mysql.utf8.sql</file>
-            <file driver="postgresql" charset="utf8">sql/postgresql/install.postgresql.utf8.sql</file>
-        </sql>
-    </install>
-
-    <!-- handle uninstall -->
-    <uninstall>
-        <sql>
-            <file driver="mysql" charset="utf8">sql/mysql/uninstall.mysql.utf8.sql</file>
-            <file driver="postgresql" charset="utf8">sql/postgresql/uninstall.postgresql.utf8.sql</file>
-        </sql>
-    </uninstall>
 	
 </extension>
