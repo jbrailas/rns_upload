@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		RNS Upload and Files Display Module for Joomla 5+
-* @version		1.3.1
+* @version		1.3.2
 * @author		Giannis Brailas (ioannis@brailas.gr)
 * @license		GNU/GPLv3
 

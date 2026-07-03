@@ -2,12 +2,12 @@
 <extension type="module" version="5.0" client="site" method="upgrade">
 	<name>RNS Upload and Files Display Module for Joomla 5+</name>
 	<author>Giannis Brailas</author>
-	<creationDate>June 2026</creationDate>
+	<creationDate>July 2026</creationDate>
 	<copyright>Copyright (C) 2026 Giannis Brailas. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
 	<authorEmail>ioannis@brailas.gr</authorEmail>
 	<authorUrl>https://www.brailas.gr</authorUrl>
-	<version>1.3.1</version>
+	<version>1.3.2</version>
 	<description>RNS Upload and Files Display Module for Joomla by Giannis Brailas</description>
 	<files>
 		<filename module="mod_rnsupload">mod_rnsupload.php</filename>

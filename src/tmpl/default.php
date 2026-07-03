@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		RNS Upload and Files Display Module for Joomla 5+
-* @version		1.3.1
+* @version		1.3.2
 * @author		Giannis Brailas (ioannis@brailas.gr)
 * @license		GNU/GPLv3
 
@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //no direct access
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\HTML\HTMLHelper;
 use \Joomla\CMS\Router\Route;
 ?>
 
@@ -172,11 +173,21 @@ use \Joomla\CMS\Router\Route;
 				var upload_folder =  $('#pdfuploadfolder').val();
 				var rns_module_id = jQuery("#rns_module_id").val();
 
-				// Grab the token name from Joomla options or directly from the form input element
-				const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+				// Safely fetch the token name
+				let tokenName = Joomla.getOptions('csrf.token');
 
-				//console.log('id_arxeiou: ', id_arxeiou);
-				//console.log('filename: ', filename);
+				if (!tokenName) {
+					const tokenInput = document.querySelector('input[value="1"]:not([name="task"])');
+					if (tokenInput) {
+						tokenName = tokenInput.getAttribute('name');
+					}
+				}
+
+				// Only append the token to FormData object if found, keeping the script from crashing
+				// Joomla expects the token name as the key, and '1' as the value
+				if (!tokenName) {
+					console.error("CSRF Token could not be found in the DOM.");
+				}
 
 				//Ρώτησε για επιβεβαίωση
 				if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε το συγκεκριμένο αρχείο (' + filename +');\n')) {
@@ -249,12 +260,23 @@ use \Joomla\CMS\Router\Route;
 		
 		var formPDF = new FormData();
 
-		// Grab the token name from Joomla options or directly from the form input element
-		const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+		// Safely fetch the token name
+    	let tokenName = Joomla.getOptions('csrf.token');
 
-		// Append the token to your FormData object
+		if (!tokenName) {
+			const tokenInput = document.querySelector('input[value="1"]:not([name="task"])');
+			if (tokenInput) {
+				tokenName = tokenInput.getAttribute('name');
+			}
+		}
+
+		// Only append the token to FormData object if found, keeping the script from crashing
 		// Joomla expects the token name as the key, and '1' as the value
-		formPDF.append(tokenName, '1');
+		if (tokenName) {
+			formPDF.append(tokenName, '1');
+		} else {
+			console.error("CSRF Token could not be found in the DOM.");
+		}
 
 		// Append Module Id to get params
 		var rns_module_id = jQuery("#rns_module_id").val();
@@ -318,20 +340,30 @@ use \Joomla\CMS\Router\Route;
 		jQuery("#renameModal").show();
 	}
 
-	function SaveNow(editing) {
+	function SaveNow() {
 		
-		// User has clicked on save for renaming the file
+		// User has clicked Save to rename the file
 		var new_filename = jQuery("#popup_new_filename").val();
 		var old_filename = jQuery("#popup_old_filename").val();
 		var id_arxeiou = jQuery("#selected_id_arxeiou").val();
 		var upload_folder = jQuery("#pdfuploadfolder").val();
 		var rns_module_id = jQuery("#rns_module_id").val();
 
-		// Grab the token name from Joomla options or directly from the form input element
-		const tokenName = Joomla.getOptions('csrf.token') || document.querySelector('input[value="1"]:not([name="task"])').getAttribute('name');
+		// Safely fetch the token name
+    	let tokenName = Joomla.getOptions('csrf.token');
 
-		console.log('Renaming: File ' + old_filename + ' | id: ' + id_arxeiou + ' | upload_folder: ' + upload_folder);	
-		console.log('New file name: ' + new_filename);
+		if (!tokenName) {
+			const tokenInput = document.querySelector('input[value="1"]:not([name="task"])');
+			if (tokenInput) {
+				tokenName = tokenInput.getAttribute('name');
+			}
+		}
+
+		// Only append the token to FormData object if found, keeping the script from crashing
+		// Joomla expects the token name as the key, and '1' as the value
+		if (!tokenName) {
+			console.error("CSRF Token could not be found in the DOM.");
+		}
 
 		var ajaxrenameurl = "index.php?option=com_ajax&module=rnsupload&method=renamePdf&format=raw";
 			//δειξε το loading image
@@ -389,7 +421,7 @@ use \Joomla\CMS\Router\Route;
 			<input type="hidden" id="selected_id_arxeiou" name="selected_id_arxeiou" class="inputbox" placeholder="Το id του επιλεγμένου αρχείου">
 		</div>
 		<div style="clear:both;"></div>
-		<button id="SaveChangesBtn" type="submit" class="btn btn-success" style="margin:10px 0 10px 0;" onclick = 'SaveNow(true);' disabled>
+		<button id="SaveChangesBtn" type="submit" class="btn btn-success" style="margin:10px 0 10px 0;" onclick = 'SaveNow();' disabled>
 			<i class="icon-ok icon-white"></i> <?php echo 'Μετονομασία'; ?>
 		</button>
 		<button class="btn btn-danger rename_close" style="margin:10px 0 10px 0;">
@@ -858,6 +890,7 @@ use \Joomla\CMS\Router\Route;
 		</div>		
 		
 		<input type="hidden" id="pdfuploadfolder" name="pdfuploadfolder" class="inputbox" value="<?php echo $SelectedUploadFolder; ?>" placeholder="Ο φάκελος που θα ανέβουν τα έγγραφα">
+		<?php echo HTMLHelper::_('form.token'); ?>
 	<?php endif; ?>
 	<div class="clearfix"></div>
 	<div class="row-fluid">
