@@ -40,33 +40,13 @@ class rnsuploadFileupload
 	{
 		$result = array();
 		
-		//get the Joomla Path and trim whitespace and slashes from the end
-		/*$jpath = JPATH_SITE;
-		$jpath = rtrim($jpath, "/\\ \t\n\r\0\x0B");		
-				
-		//get the parent folder
-		$parent = $fparams[0];
-	
-		//get the folder location and trim whitespace and slashes from both ends
-		$folder = $fparams[1];			
-		$folder = trim($folder, "/\\ \t\n\r\0\x0B");
-					
-		//compile the full absolute path
-		$path = $jpath.DIRECTORY_SEPARATOR.$parent.DIRECTORY_SEPARATOR.$folder;
-		$path = rtrim($path, "/\\ \t\n\r\0\x0B");		
-
-		//create folder if it doesn't exist
-		if (!file_exists($path)) {
-			mkdir($path, 0755, true);
-		}*/
-
 		//Sanitize and combine folder segments
 		$subfolder = Path::clean($fparams[0] . '/' . $fparams[1]);
 
 		//Compile the full absolute path using JPATH_SITE
 		$path = Path::clean(JPATH_SITE . '/' . $subfolder);
 
-		// 3. Create the folder if it doesn't exist using the native Joomla API
+		// Create the folder if it doesn't exist using the native Joomla API
 		if (!Folder::exists($path)) {
 			// Folder::create automatically sets permissions (0755 by default) and handles recursive creation
 			if (!Folder::create($path)) {

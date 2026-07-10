@@ -16,6 +16,7 @@
 		<filename>fileupload.helper.php</filename>
 		<folder>tmpl</folder>
 		<folder>assets</folder>
+		<folder>sql</folder>
 	</files>
 	
 	<updateservers>
